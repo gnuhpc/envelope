@@ -18,7 +18,7 @@ The configuration for this example is found link:fix_hbase.conf[here]. The messa
 
 Run the example in non-secure clusters by submitting the Envelope application with the example's configuration:
 
-    $ export EXTRA_CP=/etc/hbase/conf:/opt/cloudera/parcels/CDH/lib/hbase/hbase-common.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-client.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-protocol.jar:/opt/cloudera/parcels/CDH/lib/hbase/lib/htrace-core.jar
+    $ export EXTRA_CP=/etc/hbase/conf:/opt/cloudera/parcels/CDH/lib/hbase/hbase-common.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-client.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-protocol.jar:/opt/cloudera/parcels/CDH/lib/hbase/lib/htrace-core.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-shaded-miscellaneous.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-protocol-shaded.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-shaded-protobuf.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-shaded-netty.jar
     $ spark-submit \
       --driver-class-path ${EXTRA_CP} \
       --conf spark.executor.extraClassPath=${EXTRA_CP} \
@@ -33,7 +33,7 @@ A method that works on secure clusters in both client and cluster mode is as fol
 
     $ ln -s user.kt kafka.kt
     $ export PRINCNAME=REPLACEME
-    $ HADOOP_CONF_DIR=/etc/hbase/conf:/etc/hive/conf:/etc/spark2/conf:/opt/cloudera/parcels/CDH/lib/hbase/hbase-common.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-client.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-protocol.jar:/opt/cloudera/parcels/CDH/lib/hbase/lib/htrace-core.jar \
+    $ HADOOP_CONF_DIR=/etc/hbase/conf:/etc/hive/conf:/etc/spark2/conf:/opt/cloudera/parcels/CDH/lib/hbase/hbase-common.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-client.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-protocol.jar:/opt/cloudera/parcels/CDH/lib/hbase/lib/htrace-core.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-shaded-miscellaneous.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-protocol-shaded.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-shaded-protobuf.jar:/opt/cloudera/parcels/CDH/lib/hbase/hbase-shaded-netty.jar \
         spark-submit \
         --keytab user.kt \
         --principal ${PRINCNAME} \
