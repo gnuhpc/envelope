@@ -53,7 +53,7 @@ public class DelimitedTranslator implements Translator, ProvidesAlias, ProvidesV
   private String delimiter;
   private StructType schema;
   private List<Object> values = Lists.newArrayList();
-  private Map<RowUtils.RowValueMetadata,Object> rowValueMetadata = new HashMap<>(); 
+  private Map<RowUtils.RowValueMetadata,Object> rowValueMetadata = new HashMap<>();
   private boolean delimiterRegex;
 
   public static final String DELIMITER_CONFIG_NAME = "delimiter";
@@ -76,14 +76,14 @@ public class DelimitedTranslator implements Translator, ProvidesAlias, ProvidesV
 
   @Override
   public Iterable<Row> translate(Row message) {
-    String value = message.getAs(Translator.VALUE_FIELD_NAME);
+    String value = (String)message.getAs(Translator.VALUE_FIELD_NAME);
 
     String[] stringValues = value.split((delimiterRegex) ?
                             delimiter : Pattern.quote(delimiter), schema.length());
     values.clear();
 
     for (int valuePos = 0; valuePos < schema.length(); valuePos++) {
-      Object rowVal = null; 
+      Object rowVal = null;
       if (valuePos < stringValues.length) {
         String fieldValue = stringValues[valuePos];
         DataType fieldType = schema.fields()[valuePos].dataType();
@@ -92,7 +92,7 @@ public class DelimitedTranslator implements Translator, ProvidesAlias, ProvidesV
           rowVal = RowUtils.toRowValue(fieldValue, fieldType, rowValueMetadata);
         }
       }
-      values.add(rowVal); 
+      values.add(rowVal);
     }
 
     Row row = new RowWithSchema(schema, values.toArray());
@@ -136,7 +136,7 @@ public class DelimitedTranslator implements Translator, ProvidesAlias, ProvidesV
     return Validations.builder()
         .mandatoryPath(DELIMITER_CONFIG_NAME, ConfigValueType.STRING)
         .mandatoryPath(SCHEMA_CONFIG, ConfigValueType.OBJECT)
-        .add(new SupportedFieldTypesValidation(SCHEMA_CONFIG, 
+        .add(new SupportedFieldTypesValidation(SCHEMA_CONFIG,
             new HashSet<DataType>(Arrays.asList(new DecimalType(),    DataTypes.StringType,
                                                 DataTypes.FloatType,  DataTypes.DoubleType,
                                                 DataTypes.ShortType,  DataTypes.IntegerType,

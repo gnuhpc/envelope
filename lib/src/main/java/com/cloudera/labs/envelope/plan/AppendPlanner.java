@@ -62,7 +62,7 @@ public class AppendPlanner implements BulkPlanner, ProvidesAlias, ProvidesValida
 
     List<Tuple2<MutationType, Dataset<Row>>> planned = Lists.newArrayList();
 
-    planned.add(new Tuple2<MutationType, Dataset<Row>>(MutationType.INSERT, arriving));
+    planned.add(new Tuple2<>(MutationType.INSERT, arriving));
 
     return planned;
   }
@@ -106,5 +106,5 @@ public class AppendPlanner implements BulkPlanner, ProvidesAlias, ProvidesValida
             Validations.single().mandatoryPath(KEY_FIELD_NAMES_CONFIG_NAME, ConfigValueType.LIST))
         .build();
   }
-  
+
 }

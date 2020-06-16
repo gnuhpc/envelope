@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+//配置文件模块
 public class ConfigUtils {
 
   public static final String JAR_FILE_EXCEPTION_MESSAGE = "A jar file has been provided as the" +
@@ -70,12 +71,15 @@ public class ConfigUtils {
     }
   }
 
+  //生成config
+  //先访问default,然后再是config最后是cmd line config
   public static Config applySubstitutions(Config config) {
     return ConfigFactory.defaultOverrides()
         .withFallback(config)
-        .resolve();
+        .resolve();//最后resolve
   }
 
+  //将cmd config放在config后
   public static Config applySubstitutions(Config config, String substitutionsString) {
     String[] substitutions = substitutionsString.split(Pattern.quote(","));
 
@@ -84,6 +88,7 @@ public class ConfigUtils {
       config = config.withFallback(substitutionConfig);
     }
 
+    //最后调用上边那个生成config的函数
     return applySubstitutions(config);
   }
 
@@ -91,6 +96,13 @@ public class ConfigUtils {
     return getOrElse(config, Contexts.APPLICATION_SECTION_PREFIX, ConfigFactory.empty());
   }
 
+  //合并config-load
+
+  /**
+   * 具体效果可以参见 {@link com.cloudera.labs.envelope.utils.TestConfigUtils.testMergeLoadedConfiguration}
+   * @param config
+   * @return
+   */
   public static Config mergeLoadedConfiguration(Config config) {
     if (getApplicationConfig(config).hasPath(Runner.CONFIG_LOADER_PROPERTY)) {
       Config configLoaderConfig = getApplicationConfig(config).getConfig(Runner.CONFIG_LOADER_PROPERTY);
@@ -119,7 +131,7 @@ public class ConfigUtils {
       return this;
     }
   }
-  
+
   public static Config findReplaceStringValues(Config config, String findRegex, Object replace) {
     for (Map.Entry<String, ConfigValue> valueEntry : config.entrySet()) {
       ConfigValueType valueType = valueEntry.getValue().valueType();
@@ -146,7 +158,7 @@ public class ConfigUtils {
         config = config.withValue(valueEntry.getKey(), ConfigValueFactory.fromAnyRef(replaced));
       }
     }
-    
+
     return config;
   }
 
@@ -167,6 +179,7 @@ public class ConfigUtils {
     return true;
   }
 
+  //orElse主要是为了传入泛型和默认值
   public static <T> T getOrElse(Config config, String path, T orElse) {
     if (config.hasPath(path)) {
       if (config.getValue(path).valueType() == ConfigValueType.OBJECT) {

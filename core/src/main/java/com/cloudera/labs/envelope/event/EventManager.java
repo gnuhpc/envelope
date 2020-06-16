@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Set;
 
+//
 public class EventManager {
 
   private static Set<Event> bufferedEvents = Sets.newHashSet();

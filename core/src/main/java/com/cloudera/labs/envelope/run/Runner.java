@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -99,36 +99,49 @@ public class Runner {
    */
   public void run(Config config) throws Exception {
     this.baseConfig = config;
+    //合并配置文件
     config = ConfigUtils.mergeLoadedConfiguration(config);
 
+    //验证配置文件
     validateConfigurations(config);
 
+    //获取步骤
     Set<Step> steps = StepUtils.extractSteps(config, true, true);
 
     ExecutionMode mode = getExecutionMode(steps);
 
+    //上下文初始化
     Contexts.initialize(config, mode);
 
+    //初始化安全支持
     initializeSecurity(config, steps);
 
+    //初始化事件
     initializeEventHandlers(config);
 
+    //初始化累加器
     initializeAccumulators(steps);
 
+    //初始化UDF
     initializeUDFs(config);
 
+    //初始化线程池
     initializeThreadPool(config);
 
+    //发出Start Event
     notifyPipelineStarted();
 
     try {
       if (mode == ExecutionMode.STREAMING) {
+        //提交流计算
         runStreaming(steps);
       } else {
+        //提交批处理
         runBatch(steps);
       }
     }
     catch (Exception e) {
+      //发出Exception Event
       notifyPipelineException(e);
       throw e;
     }
@@ -138,9 +151,11 @@ public class Runner {
       Contexts.closeSparkSession();
     }
 
+    //发出Finish Event
     notifyPipelineFinished();
   }
 
+  //区分流计算还是批处理模式
   private ExecutionMode getExecutionMode(Set<Step> steps) {
     ExecutionMode mode = StepUtils.hasStreamingStep(steps) ? Contexts.ExecutionMode.STREAMING : Contexts.ExecutionMode.BATCH;
     notifyExecutionMode(mode);
@@ -154,9 +169,11 @@ public class Runner {
    */
   @SuppressWarnings("unchecked")
   private void runStreaming(final Set<Step> steps) throws Exception {
+    //先把独立的、批处理的一部分拿出来跑了
     final Set<Step> independentNonStreamingSteps = StepUtils.getIndependentNonStreamingSteps(steps);
     runBatch(independentNonStreamingSteps);
 
+    //添加步骤
     Set<StreamingStep> streamingSteps = StepUtils.getStreamingSteps(steps);
     for (final StreamingStep streamingStep : streamingSteps) {
       LOG.debug("Setting up streaming step: " + streamingStep.getName());
@@ -250,12 +267,12 @@ public class Runner {
         }
         else if (step instanceof RefactorStep) {
           RefactorStep refactorStep = (RefactorStep)step;
-          
+
           if (refactorStep.getState() == StepState.WAITING) {
             LOG.debug("Step has not been submitted");
 
             final Set<Step> dependencies = StepUtils.getDependencies(step, steps);
-  
+
             if (StepUtils.allStepsFinished(dependencies)) {
               LOG.debug("Step dependencies have finished, refactoring steps");
               refactorStep.setState(StepState.SUBMITTED);
@@ -267,12 +284,12 @@ public class Runner {
         }
         else if (step instanceof TaskStep) {
           TaskStep taskStep = (TaskStep)step;
-          
+
           if (taskStep.getState() == StepState.WAITING) {
             LOG.debug("Step has not been submitted");
 
             final Set<Step> dependencies = StepUtils.getDependencies(step, steps);
-            
+
             if (StepUtils.allStepsFinished(dependencies)) {
               LOG.debug("Step dependencies have finished, running task");
               taskStep.setState(StepState.SUBMITTED);
@@ -313,6 +330,7 @@ public class Runner {
     LOG.debug("Finished batch for steps: {}", StepUtils.stepNamesAsString(steps));
   }
 
+  //初始化线程池
   private void initializeThreadPool(Config config) {
     if (config.hasPath(PIPELINE_THREADS_PROPERTY)) {
       threadPool = Executors.newFixedThreadPool(config.getInt(PIPELINE_THREADS_PROPERTY));
@@ -346,6 +364,7 @@ public class Runner {
     EventManager.register(getEventHandlers(config, true).values());
   }
 
+  //获取Event处理者
   private Map<Config, EventHandler> getEventHandlers(Config config, boolean configure) {
     Map<Config, EventHandler> handlers = Maps.newHashMap();
     Set<String> nonConfiguredDefaultHandlerAliases = Sets.newHashSet(
@@ -354,7 +373,7 @@ public class Runner {
 
     if (ConfigUtils.getApplicationConfig(config).hasPath(EVENT_HANDLERS_CONFIG)) {
       List<? extends ConfigObject> handlerConfigObjects;
-      try {
+      try {//获取所有handler的config
         handlerConfigObjects =
             ConfigUtils.getApplicationConfig(config).getObjectList(EVENT_HANDLERS_CONFIG);
       }
@@ -364,6 +383,7 @@ public class Runner {
 
       for (ConfigObject handlerConfigObject : handlerConfigObjects) {
         Config handlerConfig = handlerConfigObject.toConfig();
+        //初始化每一个handler
         EventHandler handler = ComponentFactory.create(EventHandler.class, handlerConfig, configure);
         handlers.put(handlerConfig, handler);
 
@@ -385,14 +405,17 @@ public class Runner {
     return handlers;
   }
 
+  //发送开始event
   private void notifyPipelineStarted() {
     EventManager.notify(new Event(CoreEventTypes.PIPELINE_STARTED, "Pipeline started"));
   }
 
+  //发送结束event
   private void notifyPipelineFinished() {
     EventManager.notify(new Event(CoreEventTypes.PIPELINE_FINISHED, "Pipeline finished"));
   }
 
+  //发送Exception event
   private void notifyPipelineException(Exception e) {
     Map<String, Object> metadata = Maps.newHashMap();
     metadata.put(CoreEventMetadataKeys.PIPELINE_EXCEPTION_OCCURRED_EXCEPTION, e);
@@ -403,6 +426,7 @@ public class Runner {
     EventManager.notify(event);
   }
 
+  //发送执行模式event
   private void notifyExecutionMode(ExecutionMode mode) {
     Map<String, Object> metadata = Maps.newHashMap();
     metadata.put(CoreEventMetadataKeys.EXECUTION_MODE_DETERMINED_MODE, mode);
@@ -413,7 +437,9 @@ public class Runner {
         metadata));
   }
 
+  //检验配置文件
   private void validateConfigurations(Config config) {
+    //是否跳过validation
     if (!ConfigUtils.getOrElse(config,
         Validator.CONFIGURATION_VALIDATION_ENABLED_PROPERTY,
         Validator.CONFIGURATION_VALIDATION_ENABLED_DEFAULT))
@@ -441,6 +467,7 @@ public class Runner {
       }
     }
     for (Step step : steps) {
+      //校验每一个step
       List<ValidationResult> stepResults =
           Validator.validate(step, config.getConfig(STEPS_SECTION_CONFIG).getConfig(step.getName()));
       ValidationUtils.prefixValidationResultMessages(stepResults, "Step '" + step.getName() + "'");
@@ -509,6 +536,7 @@ public class Runner {
     LOG.info("Provided Envelope configuration is valid (" + results.size() + " checks passed)");
   }
 
+  //初始化安全
   private void initializeSecurity(Config config, Set<Step> steps) throws Exception {
     tokenStoreManager = new TokenStoreManager(ConfigUtils.getOrElse(
         ConfigUtils.getApplicationConfig(config), SECURITY_PREFIX, ConfigFactory.empty()));
@@ -516,7 +544,7 @@ public class Runner {
 
     Set<InstantiatedComponent> secureComponents = Sets.newHashSet();
 
-    // Get step security providers
+    // Get step security providers , 嵌套的
     for (Step step : steps) {
       if (step instanceof InstantiatesComponents) {
         InstantiatesComponents thisStep = (InstantiatesComponents) step;
@@ -529,7 +557,7 @@ public class Runner {
       }
     }
 
-    // Get event handler security providers
+    // Get event handler security providers, 嵌套的
     for (EventHandler handler : getEventHandlers(config, true).values()) {
       if (handler instanceof InstantiatesComponents) {
         Set<InstantiatedComponent> components =
@@ -553,11 +581,13 @@ public class Runner {
     tokenStoreManager.start();
   }
 
+  //关闭安全
   private void shutdownSecurity() {
     tokenStoreManager.stop();
     TokenStoreListener.stop();
   }
 
+  //初始化累加器
   private void initializeAccumulators(Set<Step> steps) {
     Set<AccumulatorRequest> requests = Sets.newHashSet();
 
@@ -565,6 +595,7 @@ public class Runner {
       requests.addAll(dataStep.getAccumulatorRequests());
     }
 
+    //生成accumulator
     Accumulators accumulators = new Accumulators(requests);
 
     for (DataStep dataStep : StepUtils.getDataSteps(steps)) {
@@ -572,6 +603,7 @@ public class Runner {
     }
   }
 
+  //初始化UDF
   void initializeUDFs(Config config) {
     if (!config.hasPath(UDFS_SECTION_CONFIG)) return;
 
@@ -585,6 +617,7 @@ public class Runner {
 
       Config udfConfig = ((ConfigObject)udfValue).toConfig();
 
+      //检查UDF
       for (String path : Lists.newArrayList(UDFS_NAME, UDFS_CLASS)) {
         if (!udfConfig.hasPath(path)) {
           throw new RuntimeException("UDF entries must provide '" + path + "'");

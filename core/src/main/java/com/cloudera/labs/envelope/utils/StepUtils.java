@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -49,7 +49,7 @@ import java.util.Set;
 public class StepUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(StepUtils.class);
-  
+
   public static boolean allStepsSubmitted(Set<Step> steps) {
     for (Step step : steps) {
       if (step.getState() == StepState.WAITING) {
@@ -178,16 +178,16 @@ public class StepUtils {
     }
     resetSteps(resetSteps);
   }
-  
+
   public static Set<DataStep> getDataSteps(Set<Step> steps) {
     Set<DataStep> dataSteps = Sets.newHashSet();
-    
+
     for (Step step : steps) {
       if (step instanceof DataStep) {
         dataSteps.add((DataStep)step);
       }
     }
-    
+
     return dataSteps;
   }
 
@@ -197,20 +197,20 @@ public class StepUtils {
         return Optional.of(step);
       }
     }
-    
+
     return Optional.absent();
   }
 
   public static Set<Step> copySteps(Set<Step> steps) {
     Set<Step> stepsCopy = Sets.newHashSet();
-    
+
     for (Step step : steps) {
       stepsCopy.add(step.copy());
     }
-    
+
     return stepsCopy;
   }
-  
+
   public static Map<String, Dataset<Row>> getStepDataFrames(Set<Step> steps) {
     Map<String, Dataset<Row>> stepDFs = Maps.newHashMap();
 
@@ -223,6 +223,7 @@ public class StepUtils {
     return stepDFs;
   }
 
+  //解析步骤
   public static Set<Step> extractSteps(Config config, boolean configure, boolean notify) {
     LOG.debug("Starting extracting steps");
 
@@ -232,6 +233,7 @@ public class StepUtils {
 
     Set<String> stepNames = config.getObject(Runner.STEPS_SECTION_CONFIG).keySet();
     for (String stepName : stepNames) {
+        //获取具体step的配置
       Config stepConfig = config.getConfig(Runner.STEPS_SECTION_CONFIG).getConfig(stepName);
 
       Step step;
@@ -276,6 +278,7 @@ public class StepUtils {
         throw new RuntimeException("Unknown step type: " + stepConfig.getString(Runner.TYPE_PROPERTY));
       }
 
+      //将配置与步骤放在一起,用做真正要执行的step
       if (configure) {
         step.configure(stepConfig);
         LOG.debug("With configuration: " + stepConfig);
@@ -284,7 +287,7 @@ public class StepUtils {
       steps.add(step);
     }
 
-    if (notify) {
+    if (notify) {//通知事件管理器
       Map<String, Object> metadata = Maps.newHashMap();
       metadata.put(CoreEventMetadataKeys.STEPS_EXTRACTED_CONFIG, config);
       metadata.put(CoreEventMetadataKeys.STEPS_EXTRACTED_STEPS, steps);

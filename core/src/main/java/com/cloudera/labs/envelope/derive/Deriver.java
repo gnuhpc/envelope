@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -21,7 +21,7 @@ import org.apache.spark.sql.Row;
 
 import java.util.Map;
 
-/**
+/** //processor实际上是
  * Derivers create new DataFrames derived from DataFrames already loaded into the Spark application.
  * Custom derivers should directly implement this interface.
  */

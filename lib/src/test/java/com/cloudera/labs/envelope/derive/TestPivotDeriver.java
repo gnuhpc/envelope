@@ -35,6 +35,7 @@ import static com.cloudera.labs.envelope.validate.ValidationAssert.assertNoValid
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+//https://zhuanlan.zhihu.com/p/78161495 便于理解
 public class TestPivotDeriver {
 
   @Test
@@ -53,7 +54,7 @@ public class TestPivotDeriver {
 
     Map<String, Dataset<Row>> dependencies = Maps.newHashMap();
     dependencies.put("source", source);
-    
+
     Config config = ConfigFactory.empty()
         .withValue(PivotDeriver.STEP_NAME_CONFIG, ConfigValueFactory.fromAnyRef("source"))
         .withValue(PivotDeriver.ENTITY_KEY_FIELD_NAMES_CONFIG, ConfigValueFactory.fromAnyRef(Lists.newArrayList("entity_id")))
@@ -63,15 +64,15 @@ public class TestPivotDeriver {
     PivotDeriver d = new PivotDeriver();
     assertNoValidationFailures(d, config);
     d.configure(config);
-    
+
     List<Row> results = d.derive(dependencies).collectAsList();
-    
+
     assertEquals(results.size(), 3);
     assertTrue(results.contains(RowFactory.create("A", "1", "2")));
     assertTrue(results.contains(RowFactory.create("B", "3", null)));
     assertTrue(results.contains(RowFactory.create("C", null, "4")));
   }
-  
+
   @Test
   public void testIntegerDataType() throws Exception {
     List<Row> sourceList = Lists.newArrayList(
@@ -88,7 +89,7 @@ public class TestPivotDeriver {
 
     Map<String, Dataset<Row>> dependencies = Maps.newHashMap();
     dependencies.put("source", source);
-    
+
     Config config = ConfigFactory.empty()
         .withValue(PivotDeriver.STEP_NAME_CONFIG, ConfigValueFactory.fromAnyRef("source"))
         .withValue(PivotDeriver.ENTITY_KEY_FIELD_NAMES_CONFIG, ConfigValueFactory.fromAnyRef(Lists.newArrayList("entity_id")))
@@ -98,15 +99,15 @@ public class TestPivotDeriver {
     PivotDeriver d = new PivotDeriver();
     assertNoValidationFailures(d, config);
     d.configure(config);
-    
+
     List<Row> results = d.derive(dependencies).collectAsList();
-    
+
     assertEquals(results.size(), 3);
     assertTrue(results.contains(RowFactory.create("A", 1, 2)));
     assertTrue(results.contains(RowFactory.create("B", 3, null)));
     assertTrue(results.contains(RowFactory.create("C", null, 4)));
   }
-  
+
   @Test
   public void testDoubleDataType() throws Exception {
     List<Row> sourceList = Lists.newArrayList(
@@ -123,7 +124,7 @@ public class TestPivotDeriver {
 
     Map<String, Dataset<Row>> dependencies = Maps.newHashMap();
     dependencies.put("source", source);
-    
+
     Config config = ConfigFactory.empty()
         .withValue(PivotDeriver.STEP_NAME_CONFIG, ConfigValueFactory.fromAnyRef("source"))
         .withValue(PivotDeriver.ENTITY_KEY_FIELD_NAMES_CONFIG, ConfigValueFactory.fromAnyRef(Lists.newArrayList("entity_id")))
@@ -133,15 +134,15 @@ public class TestPivotDeriver {
     PivotDeriver d = new PivotDeriver();
     assertNoValidationFailures(d, config);
     d.configure(config);
-    
+
     List<Row> results = d.derive(dependencies).collectAsList();
-    
+
     assertEquals(results.size(), 3);
     assertTrue(results.contains(RowFactory.create("A", 1.0, 2.0)));
     assertTrue(results.contains(RowFactory.create("B", 3.0, null)));
     assertTrue(results.contains(RowFactory.create("C", null, 4.0)));
   }
-  
+
   @Test
   public void testMultipleFieldEntityKeyPivot() throws Exception {
     List<Row> sourceList = Lists.newArrayList(
@@ -160,7 +161,7 @@ public class TestPivotDeriver {
 
     Map<String, Dataset<Row>> dependencies = Maps.newHashMap();
     dependencies.put("source", source);
-    
+
     Config config = ConfigFactory.empty()
         .withValue(PivotDeriver.STEP_NAME_CONFIG, ConfigValueFactory.fromAnyRef("source"))
         .withValue(PivotDeriver.ENTITY_KEY_FIELD_NAMES_CONFIG, ConfigValueFactory.fromAnyRef(
@@ -171,15 +172,15 @@ public class TestPivotDeriver {
     PivotDeriver d = new PivotDeriver();
     assertNoValidationFailures(d, config);
     d.configure(config);
-    
+
     List<Row> results = d.derive(dependencies).collectAsList();
-    
+
     assertEquals(results.size(), 3);
     assertTrue(results.contains(RowFactory.create("A", "AA", "AAA", "1", "2")));
     assertTrue(results.contains(RowFactory.create("B", "BB", "BBB", "3", null)));
     assertTrue(results.contains(RowFactory.create("C", "CC", "CCC", null, "4")));
   }
-  
+
   @Test
   public void testSpecifiedDynamicPivot() throws Exception {
     List<Row> sourceList = Lists.newArrayList(
@@ -196,7 +197,7 @@ public class TestPivotDeriver {
 
     Map<String, Dataset<Row>> dependencies = Maps.newHashMap();
     dependencies.put("source", source);
-    
+
     Config config = ConfigFactory.empty()
         .withValue(PivotDeriver.STEP_NAME_CONFIG, ConfigValueFactory.fromAnyRef("source"))
         .withValue(PivotDeriver.ENTITY_KEY_FIELD_NAMES_CONFIG, ConfigValueFactory.fromAnyRef(Lists.newArrayList("entity_id")))
@@ -207,15 +208,15 @@ public class TestPivotDeriver {
     PivotDeriver d = new PivotDeriver();
     assertNoValidationFailures(d, config);
     d.configure(config);
-    
+
     List<Row> results = d.derive(dependencies).collectAsList();
-    
+
     assertEquals(results.size(), 3);
     assertTrue(results.contains(RowFactory.create("A", "1", "2")));
     assertTrue(results.contains(RowFactory.create("B", "3", null)));
     assertTrue(results.contains(RowFactory.create("C", null, "4")));
   }
-  
+
   @Test
   public void testStaticPivot() throws Exception {
     List<Row> sourceList = Lists.newArrayList(
@@ -233,7 +234,7 @@ public class TestPivotDeriver {
 
     Map<String, Dataset<Row>> dependencies = Maps.newHashMap();
     dependencies.put("source", source);
-    
+
     Config config = ConfigFactory.empty()
         .withValue(PivotDeriver.STEP_NAME_CONFIG, ConfigValueFactory.fromAnyRef("source"))
         .withValue(PivotDeriver.ENTITY_KEY_FIELD_NAMES_CONFIG, ConfigValueFactory.fromAnyRef(Lists.newArrayList("entity_id")))
@@ -245,14 +246,14 @@ public class TestPivotDeriver {
     PivotDeriver d = new PivotDeriver();
     assertNoValidationFailures(d, config);
     d.configure(config);
-    
+
     List<Row> results = d.derive(dependencies).collectAsList();
-    
+
     assertEquals(results.size(), 4);
     assertTrue(results.contains(RowFactory.create("A", "1", "2")));
     assertTrue(results.contains(RowFactory.create("B", "3", null)));
     assertTrue(results.contains(RowFactory.create("C", null, "4")));
     assertTrue(results.contains(RowFactory.create("D", null, null)));
   }
-  
+
 }

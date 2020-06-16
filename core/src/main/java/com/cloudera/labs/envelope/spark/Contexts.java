@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -102,13 +102,15 @@ public enum Contexts {
     return INSTANCE.jsc;
   }
 
+  //如果在关闭前发现ss已经初始化,说明
   public static synchronized void closeSparkSession() {
-    if (INSTANCE.ss != null) {
+    if (INSTANCE.ss != null) {//TODO 改为hasSparkSession
       INSTANCE.ss.close();
       INSTANCE.ss = null;
-      INSTANCE.mode = ExecutionMode.UNIT_TEST;
+      INSTANCE.mode = ExecutionMode.UNIT_TEST;//TODO ??
     }
 
+    //清理文件
     FileUtils.deleteQuietly(new File("metastore_db"));
     FileUtils.deleteQuietly(new File("derby.log"));
     FileUtils.deleteQuietly(new File("spark-warehouse"));
@@ -158,6 +160,7 @@ public enum Contexts {
     INSTANCE.ss = sparkSessionBuilder.config(sparkConf).getOrCreate();
   }
 
+  //生成spark conf
   private static synchronized SparkConf getSparkConfiguration(Config config, ExecutionMode mode) {
     SparkConf sparkConf = new SparkConf();
 

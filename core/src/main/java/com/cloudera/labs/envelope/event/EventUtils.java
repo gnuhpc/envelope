@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -46,6 +46,7 @@ public class EventUtils {
     return bd.toPlainString() + uom;
   }
 
+  //获取调用类的名字
   public static String getCallingClassName() {
     StackTraceElement[] stes = Thread.currentThread().getStackTrace();
 

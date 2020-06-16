@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -18,19 +18,19 @@ package com.cloudera.labs.envelope.component;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
-/**
+/** 返回错误数据的接口
  *  This interface should be implemented when a component wants to capture errored data.
- * 
+ *
  *  Envelope uses this interface to retrieve errored data and register it as a datastep that
- *  can be referenced for further processing. 
- * 
+ *  can be referenced for further processing.
+ *
  *  This is currently only supported for inputs and derivers
  */
 public interface CanReturnErroredData {
-    
+
   /**
    * Returns the data that errored out
-   */  
+   */
   Dataset<Row> getErroredData();
 
 }
