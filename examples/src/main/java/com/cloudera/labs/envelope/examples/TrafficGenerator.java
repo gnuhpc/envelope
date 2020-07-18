@@ -21,6 +21,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import java.util.Properties;
 import java.util.Random;
 
+//TODO 可以去掉
 public class TrafficGenerator {
 
   public static void main(final String[] args) throws Exception {
