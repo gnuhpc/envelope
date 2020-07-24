@@ -153,6 +153,7 @@ public class Runner {
    */
   @SuppressWarnings("unchecked")
   private void runStreaming(final Set<Step> steps) throws Exception {
+    //先运行和streaming无关的步骤
     final Set<Step> independentNonStreamingSteps = StepUtils.getIndependentNonStreamingSteps(steps);
     runBatch(independentNonStreamingSteps);
 
@@ -162,6 +163,7 @@ public class Runner {
 
       JavaDStream stream = streamingStep.getStream();
 
+      // sets up the computation it will perform after it is started
       stream.foreachRDD(new VoidFunction<JavaRDD<?>>() {
         @Override
         public void call(JavaRDD<?> raw) throws Exception {
@@ -170,9 +172,11 @@ public class Runner {
           // This will run any batch steps (and dependents) that are not submitted
           runBatch(independentNonStreamingSteps);
 
+          //先经过Translator
           streamingStep.setData(streamingStep.translate(raw));
           streamingStep.writeData();
           streamingStep.setState(StepState.FINISHED);
+
 
           Set<Step> batchSteps = StepUtils.mergeLoadedSteps(steps, streamingStep, baseConfig);
           Set<Step> dependentSteps = StepUtils.getAllDependentSteps(streamingStep, batchSteps);
@@ -190,6 +194,7 @@ public class Runner {
       LOG.debug("Finished setting up streaming step: " + streamingStep.getName());
     }
 
+    //Kick off!
     JavaStreamingContext jsc = Contexts.getJavaStreamingContext();
     jsc.start();
     LOG.debug("Streaming context started");
@@ -255,12 +260,12 @@ public class Runner {
           LOG.debug("Step is a refactor step");
 
           RefactorStep refactorStep = (RefactorStep)step;
-          
+
           if (refactorStep.getState() == StepState.WAITING) {
             LOG.debug("Step has not been submitted");
 
             final Set<Step> dependencies = StepUtils.getDependencies(step, steps);
-  
+
             if (StepUtils.allStepsFinished(dependencies)) {
               LOG.debug("Step dependencies have finished, refactoring steps");
               refactorStep.setState(StepState.SUBMITTED);
@@ -274,12 +279,12 @@ public class Runner {
           LOG.debug("Step is a task");
 
           TaskStep taskStep = (TaskStep)step;
-          
+
           if (taskStep.getState() == StepState.WAITING) {
             LOG.debug("Step has not been submitted");
 
             final Set<Step> dependencies = StepUtils.getDependencies(step, steps);
-            
+
             if (StepUtils.allStepsFinished(dependencies)) {
               LOG.debug("Step dependencies have finished, running task");
               taskStep.setState(StepState.SUBMITTED);
