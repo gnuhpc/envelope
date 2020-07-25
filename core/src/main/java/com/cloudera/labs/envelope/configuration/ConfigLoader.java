@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -18,7 +18,7 @@ package com.cloudera.labs.envelope.configuration;
 import com.cloudera.labs.envelope.component.Component;
 import com.typesafe.config.Config;
 
-/**
+/** this is typically only required when streaming pipelines require dynamic refreshing of configurations.
  * Config loaders retrieve additional configuration to be merged into the base configuration
  * provided when the Envelope application is run.
  *

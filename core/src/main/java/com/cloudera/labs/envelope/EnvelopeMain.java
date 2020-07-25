@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -33,6 +33,7 @@ public class EnvelopeMain {
   // Other Java/Scala programs could instead launch an Envelope pipeline by
   // passing their own Config object to Runner#run.
   public static void main(String[] args) throws Exception {
+    // 处理配置文件输入
     if (args.length < 1) {
       throw new RuntimeException("Missing pipeline configuration file argument.");
     } else {
@@ -41,11 +42,12 @@ public class EnvelopeMain {
         throw new RuntimeException("Can't access pipeline configuration file '" + args[0] + "'.");
       }
     }
-    
+
     LOG.info("Envelope application started");
 
     Config config = ConfigUtils.configFromPath(args[0]);
     if (args.length == 2) {
+      //合并配置文件
       config = ConfigUtils.applySubstitutions(config, args[1]);
     } else if (args.length > 2) {
       LOG.error("Too many parameters to Envelope application");

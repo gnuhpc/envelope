@@ -33,6 +33,7 @@ import java.util.Map;
 import static com.cloudera.labs.envelope.validate.ValidationAssert.assertNoValidationFailures;
 import static org.junit.Assert.assertEquals;
 
+//NestDeriver的演示  orders 嵌套进 custom
 public class TestNestDeriver {
 
   @Test

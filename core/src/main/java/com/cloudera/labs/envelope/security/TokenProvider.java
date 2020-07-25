@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -21,6 +21,7 @@ import org.apache.hadoop.security.token.Token;
  * Obtains security tokens for components interacting with external systems. Called on the driver by the Envelope
  * {@link TokenStoreManager} class.
  */
+//目前只实现了Kudu的Token Provider
 public interface TokenProvider {
 
   /**

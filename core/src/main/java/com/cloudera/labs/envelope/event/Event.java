@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 import java.util.Map;
 import java.util.UUID;
 
-/**
+/** 事件系统
  * An event is the occurrence of a point in the lifecycle of an Envelope application.
  */
 public class Event {

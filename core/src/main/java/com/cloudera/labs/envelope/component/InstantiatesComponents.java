@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -19,7 +19,7 @@ import com.typesafe.config.Config;
 
 import java.util.Set;
 
-/**
+/** 那些要初始化其他components的component需要实现该接口
  * Components that themselves instantiate other components must implement this interface.
  * This is used by Envelope to traverse the tree of components for purposes such as configuration
  * validation and identifying security requirements.
@@ -32,5 +32,5 @@ public interface InstantiatesComponents {
    * @return The set of the callee component's instantiated components.
    */
   Set<InstantiatedComponent> getComponents(Config config, boolean configure) throws Exception;
-  
+
 }

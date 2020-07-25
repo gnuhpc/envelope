@@ -37,8 +37,10 @@ For the full specification of Envelope configurations, see the <<configurations.
 
 The final configuration is constructed with the following layers (in order of precedence):
 
+//TODO 更新linkhttps://github.com/lightbend/config#optional-system-or-env-variable-overrides
 - System environment (see link:https://github.com/typesafehub/config#optional-system-or-env-variable-overrides[Optional System or ENV variables])
 - Primary Envelope configuration file
+//TODO update links:http://lightbend.github.io/config/latest/api/com/typesafe/config/ConfigFactory.html#parseString-java.lang.String
 - Command line parameters (either as HOCON or JSON; see link:http://typesafehub.github.io/config/latest/api/com/typesafe/config/ConfigFactory.html#parseString-java.lang.String-[ConfigFactory.parseString()])
 
 Then the composite is resolved for substitutions and used throughout the pipeline.

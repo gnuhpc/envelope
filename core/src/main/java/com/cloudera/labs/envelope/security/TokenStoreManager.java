@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -34,6 +34,7 @@ import org.apache.hadoop.security.token.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//https://www.jianshu.com/p/617fa722e057 介绍了Hadoop Token体系
 public class TokenStoreManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(TokenStoreManager.class);
@@ -58,6 +59,7 @@ public class TokenStoreManager {
   public TokenStoreManager(Config inputConfig) {
     config = inputConfig;
 
+    //确定配置项
     if (config.hasPath(TOKENS_CHECK_INTERVAL)) {
       providerCheckIntervalMillis = config.getDuration(TOKENS_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     }
@@ -77,6 +79,7 @@ public class TokenStoreManager {
    * @param provider a {@link TokenProvider} implementation
    */
   public void addTokenProvider(TokenProvider provider) throws Exception {
+    //Guava 操作不错
     Preconditions.checkNotNull(provider, "Supplied TokenProvider cannot be null");
     String alias = provider.getAlias();
     if (!tokenProviders.containsKey(alias)) {
@@ -87,6 +90,7 @@ public class TokenStoreManager {
     }
   }
 
+  //TODO 可以和下边那个方法合二为一
   private void addOrReplaceTokenForAlias(String alias, Token token) {
     tokenStore.addToken(alias, token);
   }
@@ -95,6 +99,7 @@ public class TokenStoreManager {
     addOrReplaceTokenForAlias(alias, provider.obtainToken());
   }
 
+  //持久化 token
   private void writeTokenStore() {
     try {
       String tokenFilePath = String.format("%s.%d", SecurityUtils.getTokenStoreFilePath(config, true),
@@ -116,6 +121,7 @@ public class TokenStoreManager {
     }
   }
 
+  //清除保存的Token
   private void cleanupTokenStoreFiles() {
     try {
       List<Path> tokenStoreFiles = SecurityUtils.getExistingTokenStoreFiles(config, hadoopConf, true);
@@ -125,6 +131,7 @@ public class TokenStoreManager {
     }
   }
 
+  //判断超时的TokenProvider,主要是提供了超时的判断
   public static class ExpiringTokenProvider {
 
     TokenProvider provider;
@@ -143,6 +150,7 @@ public class TokenStoreManager {
 
   }
 
+  //一个Renew线程
   public static class TokenRenewer implements Runnable {
 
     private TokenStoreManager manager;

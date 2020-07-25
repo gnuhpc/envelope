@@ -49,6 +49,7 @@ public class Validator {
           "Configuration validation disabled at this scope"));
     }
 
+    //取出Validation条件
     Validations vs = forValidation.getValidations();
     List<ValidationResult> vrs = Lists.newArrayList();
     Set<String> knownPaths = Sets.newHashSet();
@@ -129,10 +130,10 @@ public class Validator {
     // are not handled further down the component stack, then that is itself a validation failure.
     if (!vs.allowsUnrecognizedPaths()) {
       Set<String> unrecognizedPaths = Sets.newHashSet();
-      
+
       for (Entry<String, ConfigValue> configEntry : config.entrySet()) {
         String path = configEntry.getKey();
-        
+
         if (!knownPaths.contains(path) && !forgivenUnrecognizedPaths.contains(path)) {
           boolean doesOwnValidation = false;
           for (String ownValidatingPath : vs.getOwnValidatingPaths()) {
@@ -140,13 +141,13 @@ public class Validator {
               doesOwnValidation = true;
             }
           }
-          
+
           if (!doesOwnValidation) {
             unrecognizedPaths.add(path);
           }
         }
       }
-      
+
       if (!unrecognizedPaths.isEmpty()) {
         vrs.add(new ValidationResult(Validity.INVALID, "Unrecognized configuration(s) found: " + unrecognizedPaths));
       }
@@ -154,8 +155,8 @@ public class Validator {
         vrs.add(new ValidationResult(Validity.VALID, "No unrecognized configurations found"));
       }
     }
-    
+
     return vrs;
   }
-  
+
 }

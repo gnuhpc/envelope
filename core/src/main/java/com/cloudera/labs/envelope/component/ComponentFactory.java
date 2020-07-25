@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -22,11 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+//工厂类
 public class ComponentFactory {
 
   public static final String TYPE_CONFIG_NAME = "type";
 
+  //创建和配置特定component
   public static <T extends Component> T create(Class<T> clazz, Config config, boolean configure) {
+    //每个component都有一个type
     if (!config.hasPath(TYPE_CONFIG_NAME)) {
       throw new RuntimeException(clazz.getSimpleName() + " type not specified");
     }
@@ -46,6 +49,7 @@ public class ComponentFactory {
     return component;
   }
 
+  //通过反射创建
   private static <T> T loadImplementation(Class<T> baseClass, String aliasOrClassName)
       throws ClassNotFoundException {
     String actualClazz = aliasOrClassName;
@@ -56,7 +60,7 @@ public class ComponentFactory {
       }
     }
 
-    T t;
+    T t; //反射
     try {
       Class<?> clazz = Class.forName(actualClazz);
       Constructor<?> constructor = clazz.getConstructor();
@@ -70,15 +74,17 @@ public class ComponentFactory {
     return t;
   }
 
+  //获得加载模块的alias-className的map
   private synchronized static <T> Map<String, String> getLoadables(Class<T> clazz) {
-    ServiceLoader<T> loader = ServiceLoader.load(clazz);
+    ServiceLoader<T> loader = ServiceLoader.load(clazz);//TODO SPI
     Map<String, String> loadableMap = new HashMap<>();
-    for (T loadable : loader) {
-      if (loadable instanceof ProvidesAlias) {
+    for (T loadable : loader) { //遍历serviceloader
+      if (loadable instanceof ProvidesAlias) {//只要是有alias的
         ProvidesAlias loadableWithAlias = (ProvidesAlias)loadable;
         if (loadableMap.containsKey(loadableWithAlias.getAlias())) {
           throw new RuntimeException("More than one loadable with alias: " + loadableWithAlias.getAlias());
         }
+        //统统放入loadableMap
         loadableMap.put(loadableWithAlias.getAlias(), loadableWithAlias.getClass().getCanonicalName());
       }
     }

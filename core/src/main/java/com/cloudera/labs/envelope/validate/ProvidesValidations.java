@@ -15,7 +15,8 @@
 
 package com.cloudera.labs.envelope.validate;
 
-/**
+/** The configurations of a custom Envelope plugin (e.g. a custom deriver)
+ * can also be validated by implementing the ProvidesValidations interface.
  * Components that provide configuration validation rules should implement this interface.
  * Before configuring the component Envelope will automatically retrieve these validation rules
  * and run them against the pipeline configuration for the component.
@@ -27,5 +28,5 @@ public interface ProvidesValidations {
    * {@link Validations#single} to create a Validations object.
    */
   Validations getValidations();
-  
+
 }

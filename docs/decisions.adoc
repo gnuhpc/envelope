@@ -86,8 +86,8 @@ steps {
   decide {
     dependencies = [generate]
     type = decision
-    if.true.steps = [run_if_true]
-    decision.method = step_by_key
+    if-true-steps = [run_if_true]
+    method = step_by_key
     step = generate
     key = test1
   }

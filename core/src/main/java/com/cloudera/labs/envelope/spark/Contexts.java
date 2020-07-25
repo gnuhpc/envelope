@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Cloudera, Inc. All Rights Reserved.
+ * Copyright (c) 2015-2020, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"). You may not use this file except in
@@ -37,6 +37,12 @@ import java.util.UUID;
 /**
  * Used as a singleton for any driver code in Envelope to retrieve the various Spark contexts, and have them
  * instantiated automatically if they have not already been created.
+ */
+/*
+为什么这么写？
+https://howtodoinjava.com/design-patterns/creational/singleton-design-pattern-in-java/
+https://howtodoinjava.com/java/enum/is-enum-really-best-for-singletons/
+https://dzone.com/articles/java-singletons-using-enum
  */
 public enum Contexts {
 
@@ -83,7 +89,7 @@ public enum Contexts {
   }
 
   public static synchronized SparkSession getSparkSession() {
-    if (INSTANCE.ss == null) {
+    if (!hasSparkSession()) {
       startSparkSession();
     }
 
@@ -102,13 +108,15 @@ public enum Contexts {
     return INSTANCE.jsc;
   }
 
+  //如果在关闭前发现ss已经初始化,说明
   public static synchronized void closeSparkSession() {
-    if (INSTANCE.ss != null) {
+    if (INSTANCE.ss != null) {//TODO 改为hasSparkSession
       INSTANCE.ss.close();
       INSTANCE.ss = null;
-      INSTANCE.mode = ExecutionMode.UNIT_TEST;
+      INSTANCE.mode = ExecutionMode.UNIT_TEST;//TODO ??
     }
 
+    //清理文件
     FileUtils.deleteQuietly(new File("metastore_db"));
     FileUtils.deleteQuietly(new File("derby.log"));
     FileUtils.deleteQuietly(new File("spark-warehouse"));
@@ -126,6 +134,7 @@ public enum Contexts {
     INSTANCE.config = config.hasPath(APPLICATION_SECTION_PREFIX) ?
         config.getConfig(APPLICATION_SECTION_PREFIX) : ConfigFactory.empty();
     INSTANCE.mode = mode;
+    closeSparkSession();
     getSparkSession();
   }
 
@@ -157,6 +166,7 @@ public enum Contexts {
     INSTANCE.ss = sparkSessionBuilder.config(sparkConf).getOrCreate();
   }
 
+  //生成spark conf
   private static synchronized SparkConf getSparkConfiguration(Config config, ExecutionMode mode) {
     SparkConf sparkConf = new SparkConf();
 
