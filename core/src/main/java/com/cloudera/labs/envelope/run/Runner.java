@@ -253,6 +253,7 @@ public class Runner {
             if (dependencies.size() == step.getDependencyNames().size() &&
                 StepUtils.allStepsFinished(dependencies)) {
               LOG.debug("Step dependencies have finished, running step off main thread");
+              // 没有依赖的话就并行执行，主要是并发写
               // Batch steps are run off the main thread so that if they contain outputs they will
               // not block the parallel execution of independent steps.
               batchStep.setState(StepState.SUBMITTED);
@@ -598,6 +599,7 @@ public class Runner {
     //生成accumulator
     Accumulators accumulators = new Accumulators(requests);
 
+    //TODO 这里get了两次是不是可以优化
     for (DataStep dataStep : StepUtils.getDataSteps(steps)) {
       dataStep.receiveAccumulators(accumulators);
     }
@@ -627,6 +629,7 @@ public class Runner {
       String name = udfConfig.getString(UDFS_NAME);
       String className = udfConfig.getString(UDFS_CLASS);
 
+      //注册UDF
       // null third argument means that registerJava will infer the return type
       Contexts.getSparkSession().udf().registerJava(name, className, null);
 

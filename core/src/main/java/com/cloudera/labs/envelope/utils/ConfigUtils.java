@@ -72,7 +72,12 @@ public class ConfigUtils {
   }
 
   //生成config
-  //先访问default,然后再是config最后是cmd line config
+    /*
+    The final configuration is constructed with the following layers (in order of precedence):
+System environment (see Optional System or ENV variables)
+Primary Envelope configuration file
+Command line parameters (either as HOCON or JSON; see ConfigFactory.parseString())
+     */
   public static Config applySubstitutions(Config config) {
     return ConfigFactory.defaultOverrides()
         .withFallback(config)
@@ -85,6 +90,7 @@ public class ConfigUtils {
 
     for (String substitution : substitutions) {
       Config substitutionConfig = ConfigFactory.parseString(substitution);
+      //a.withFallback(b)  a和b合并，如果有相同的key，以a为准
       config = config.withFallback(substitutionConfig);
     }
 
@@ -92,11 +98,18 @@ public class ConfigUtils {
     return applySubstitutions(config);
   }
 
+  //获取application conf，如果有的话
   public static Config getApplicationConfig(Config config) {
     return getOrElse(config, Contexts.APPLICATION_SECTION_PREFIX, ConfigFactory.empty());
   }
 
   //合并config-load
+  /*
+  The config loader object that will provide configurations to be merged into
+  the base configuration at the start of the pipeline
+  and for every micro-batch. Note this is typically only required when
+  streaming pipelines require dynamic refreshing of configurations.
+   */
 
   /**
    * 具体效果可以参见 {@link com.cloudera.labs.envelope.utils.TestConfigUtils.testMergeLoadedConfiguration}
@@ -104,6 +117,7 @@ public class ConfigUtils {
    * @return
    */
   public static Config mergeLoadedConfiguration(Config config) {
+    //如果application 里面有config-loader选项的话
     if (getApplicationConfig(config).hasPath(Runner.CONFIG_LOADER_PROPERTY)) {
       Config configLoaderConfig = getApplicationConfig(config).getConfig(Runner.CONFIG_LOADER_PROPERTY);
       ConfigLoader configLoader = ComponentFactory.create(ConfigLoader.class, configLoaderConfig, true);

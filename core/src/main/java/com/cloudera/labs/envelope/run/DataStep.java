@@ -108,10 +108,10 @@ public abstract class DataStep
   }
 
   public Dataset<Row> getData() {
-    return data;  
+    return data;
   }
 
-  public void setData(Dataset<Row> batchDF) {
+  public void setData(Dataset<Row> batchDF) {//模板方法
     this.data = batchDF;
 
     if (doesCache()) {
@@ -121,7 +121,7 @@ public abstract class DataStep
     if (usesSmallHint()) {
       applySmallHint();
     }
-    
+
     if (doesPrintSchema()) {
       printSchema();
     }
@@ -196,7 +196,7 @@ public abstract class DataStep
       return ComponentFactory.create(Input.class, inputConfig, configure);
     }
   }
-  
+
   protected Deriver getDeriver(boolean configure) {
     Config deriverConfig = config.getConfig(DERIVER_TYPE);
 
@@ -246,13 +246,13 @@ public abstract class DataStep
   private boolean doesCache() {
     return ConfigUtils.getOrElse(config, CACHE_ENABLED_PROPERTY, false);
   }
-  
+
   protected void cache() {
     String cacheLevel = "MEMORY_ONLY";
-    if (config.hasPath(CACHE_STORAGE_LEVEL_PROPERTY)) { 
+    if (config.hasPath(CACHE_STORAGE_LEVEL_PROPERTY)) {
       cacheLevel = config.getString(CACHE_STORAGE_LEVEL_PROPERTY);
     }
-    
+
     switch(cacheLevel){
       case "DISK_ONLY":
         data.persist(StorageLevel.DISK_ONLY());
@@ -313,21 +313,21 @@ public abstract class DataStep
   private void applySmallHint() {
     data = functions.broadcast(data);
   }
-  
+
   private boolean doesPrintSchema() {
     return ConfigUtils.getOrElse(config, PRINT_SCHEMA_ENABLED_PROPERTY, false);
   }
-  
+
   private void printSchema() {
     System.out.println("Schema for step " + getName() + ":");
-    
+
     data.printSchema();
   }
-  
+
   private boolean doesPrintData() {
     return ConfigUtils.getOrElse(config, PRINT_DATA_ENABLED_PROPERTY, false);
   }
-  
+
   private void printData() {
     if (config.hasPath(PRINT_DATA_LIMIT_PROPERTY)) {
       int limit = config.getInt(PRINT_DATA_LIMIT_PROPERTY);
@@ -337,11 +337,11 @@ public abstract class DataStep
       data.show(false);
     }
   }
-  
+
   @Override
   public Set<AccumulatorRequest> getAccumulatorRequests() {
     Set<AccumulatorRequest> requests = Sets.newHashSet();
-    
+
     if (hasInput() && getInput(false) instanceof UsesAccumulators) {
       requests.addAll(((UsesAccumulators)getInput(false)).getAccumulatorRequests());
     }
@@ -354,19 +354,19 @@ public abstract class DataStep
     if (hasOutput() && getOutput(false) instanceof UsesAccumulators) {
       requests.addAll(((UsesAccumulators)getOutput(false)).getAccumulatorRequests());
     }
-    
+
     requests.add(new AccumulatorRequest(ACCUMULATOR_SECONDS_PLANNING, Double.class));
     requests.add(new AccumulatorRequest(ACCUMULATOR_SECONDS_APPLYING, Double.class));
     requests.add(new AccumulatorRequest(ACCUMULATOR_SECONDS_EXISTING, Double.class));
     requests.add(new AccumulatorRequest(ACCUMULATOR_SECONDS_EXTRACTING_KEYS, Double.class));
-    
+
     return requests;
   }
-  
+
   @Override
   public void receiveAccumulators(Accumulators accumulators) {
     this.accumulators = accumulators;
-    
+
     if (hasInput() && getInput(false) instanceof UsesAccumulators) {
       ((UsesAccumulators)getInput(false)).receiveAccumulators(accumulators);
     }
@@ -533,20 +533,20 @@ public abstract class DataStep
     throw new RuntimeException("Incompatible planner (" + planner.getClass() +
         ") and output (" + output.getClass() + ").");
   }
-  
+
   // Group the arriving records by key, attach the existing records for each key, and plan
   private JavaRDD<Row> planMutationsByKey(Dataset<Row> arriving, List<String> keyFieldNames,
                                           Config plannerConfig, Config outputConfig) {
-    JavaPairRDD<Row, Row> keyedArriving = 
+    JavaPairRDD<Row, Row> keyedArriving =
         arriving.javaRDD().keyBy(new ExtractKeyFunction(keyFieldNames, accumulators));
 
-    JavaPairRDD<Row, Iterable<Row>> arrivingByKey = 
+    JavaPairRDD<Row, Iterable<Row>> arrivingByKey =
         keyedArriving.groupByKey(getPartitioner(keyedArriving));
 
     JavaPairRDD<Row, Tuple2<Iterable<Row>, Iterable<Row>>> arrivingAndExistingByKey =
         arrivingByKey.mapPartitionsToPair(new JoinExistingForKeysFunction(outputConfig, keyFieldNames, accumulators));
 
-    JavaRDD<Row> planned = 
+    JavaRDD<Row> planned =
         arrivingAndExistingByKey.flatMap(new PlanForKeyFunction(plannerConfig, accumulators));
 
     return planned;
@@ -572,7 +572,7 @@ public abstract class DataStep
       }
 
       Row key = RowUtils.subsetRow(arrived, schema);
-      
+
       long endTime = System.nanoTime();
       accumulators.getDoubleAccumulators().get(ACCUMULATOR_SECONDS_EXTRACTING_KEYS).add(
           (endTime - startTime) / 1000.0 / 1000.0 / 1000.0);
@@ -580,10 +580,10 @@ public abstract class DataStep
       return key;
     }
   }
-  
+
   private Partitioner getPartitioner(JavaPairRDD<Row, Row> keyedArriving) {
     Config partitionerConfig;
-    
+
     if (hasPartitioner()) {
       partitionerConfig = config.getConfig(PARTITIONER_TYPE);
     }
@@ -591,10 +591,10 @@ public abstract class DataStep
       partitionerConfig = ConfigFactory.empty().withValue(
           PartitionerFactory.TYPE_CONFIG_NAME, ConfigValueFactory.fromAnyRef("range"));
     }
-    
+
     return PartitionerFactory.create(partitionerConfig, keyedArriving);
   }
-  
+
   @SuppressWarnings("serial")
   private static class JoinExistingForKeysFunction
   implements PairFlatMapFunction<Iterator<Tuple2<Row, Iterable<Row>>>, Row, Tuple2<Iterable<Row>, Iterable<Row>>> {
@@ -618,7 +618,7 @@ public abstract class DataStep
       if (!arrivingForKeysIterator.hasNext()) {
         return Lists.<Tuple2<Row, Tuple2<Iterable<Row>, Iterable<Row>>>>newArrayList().iterator();
       }
-      
+
       long startTime = System.nanoTime();
 
       // If we have not instantiated the output for this partition, instantiate it
@@ -637,14 +637,14 @@ public abstract class DataStep
 
       // Get the existing records for those keys from the output
       Iterable<Row> existingWithoutKeys = output.getExistingForFilters(arrivingKeys);
-      
+
       // Map the retrieved existing records to the keys they were looked up from
       Map<Row, Iterable<Row>> existingForKeys = mapExistingToKeys(existingWithoutKeys);
 
       // Attach the existing records by key to the arriving records by key
-      List<Tuple2<Row, Tuple2<Iterable<Row>, Iterable<Row>>>> arrivingAndExistingForKeys = 
+      List<Tuple2<Row, Tuple2<Iterable<Row>, Iterable<Row>>>> arrivingAndExistingForKeys =
           attachExistingToArrivingForKeys(existingForKeys, arrivingForKeys);
-      
+
       long endTime = System.nanoTime();
       accumulators.getDoubleAccumulators().get(ACCUMULATOR_SECONDS_EXISTING).add(
           (endTime - startTime) / 1000.0 / 1000.0 / 1000.0);
@@ -696,8 +696,8 @@ public abstract class DataStep
         }
 
         // Oh my...
-        Tuple2<Row, Tuple2<Iterable<Row>, Iterable<Row>>> arrivingAndExistingForKey = 
-            new Tuple2<Row, Tuple2<Iterable<Row>, Iterable<Row>>>(key, 
+        Tuple2<Row, Tuple2<Iterable<Row>, Iterable<Row>>> arrivingAndExistingForKey =
+            new Tuple2<Row, Tuple2<Iterable<Row>, Iterable<Row>>>(key,
                 new Tuple2<Iterable<Row>, Iterable<Row>>(arriving, existing));
 
         arrivingAndExistingForKeys.add(arrivingAndExistingForKey);
@@ -723,7 +723,7 @@ public abstract class DataStep
     public Iterator<Row>
     call(Tuple2<Row, Tuple2<Iterable<Row>, Iterable<Row>>> keyedRecords) throws Exception {
       long startTime = System.nanoTime();
-      
+
       if (planner == null) {
         planner = (RandomPlanner)ComponentFactory.create(Planner.class, config, true);
         if (planner instanceof UsesAccumulators) {
@@ -736,7 +736,7 @@ public abstract class DataStep
       List<Row> existingRecords = Lists.newArrayList(keyedRecords._2()._2());
 
       Iterable<Row> plannedForKey = planner.planMutationsForKey(key, arrivingRecords, existingRecords);
-      
+
       long endTime = System.nanoTime();
       accumulators.getDoubleAccumulators().get(ACCUMULATOR_SECONDS_PLANNING).add(
           (endTime - startTime) / 1000.0 / 1000.0 / 1000.0);
@@ -770,11 +770,11 @@ public abstract class DataStep
           ((UsesAccumulators)output).receiveAccumulators(accumulators);
         }
       }
-      
+
       List<Row> planned = Lists.newArrayList(plannedIterator);
 
       output.applyRandomMutations(planned);
-      
+
       long endTime = System.nanoTime();
       accumulators.getDoubleAccumulators().get(ACCUMULATOR_SECONDS_APPLYING).add(
           (endTime - startTime) / 1000.0 / 1000.0 / 1000.0);

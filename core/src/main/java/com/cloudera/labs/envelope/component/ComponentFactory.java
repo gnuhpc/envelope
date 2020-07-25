@@ -60,7 +60,7 @@ public class ComponentFactory {
       }
     }
 
-    T t;
+    T t; //反射
     try {
       Class<?> clazz = Class.forName(actualClazz);
       Constructor<?> constructor = clazz.getConstructor();
@@ -74,16 +74,17 @@ public class ComponentFactory {
     return t;
   }
 
-  //获得加载的模块的alias-className的map
+  //获得加载模块的alias-className的map
   private synchronized static <T> Map<String, String> getLoadables(Class<T> clazz) {
-    ServiceLoader<T> loader = ServiceLoader.load(clazz);
+    ServiceLoader<T> loader = ServiceLoader.load(clazz);//TODO SPI
     Map<String, String> loadableMap = new HashMap<>();
-    for (T loadable : loader) {
-      if (loadable instanceof ProvidesAlias) {
+    for (T loadable : loader) { //遍历serviceloader
+      if (loadable instanceof ProvidesAlias) {//只要是有alias的
         ProvidesAlias loadableWithAlias = (ProvidesAlias)loadable;
         if (loadableMap.containsKey(loadableWithAlias.getAlias())) {
           throw new RuntimeException("More than one loadable with alias: " + loadableWithAlias.getAlias());
         }
+        //统统放入loadableMap
         loadableMap.put(loadableWithAlias.getAlias(), loadableWithAlias.getClass().getCanonicalName());
       }
     }

@@ -241,7 +241,7 @@ public class StepUtils {
       if (!stepConfig.hasPath(Runner.TYPE_PROPERTY) ||
           stepConfig.getString(Runner.TYPE_PROPERTY).equals(Runner.DATA_TYPE))
       {
-        if (stepConfig.hasPath(DataStep.INPUT_TYPE)) {
+        if (stepConfig.hasPath(DataStep.INPUT_TYPE)) { //InputStep有两种，因此需要反射构造出来看看它属于哪种
           Config stepInputConfig = stepConfig.getConfig(DataStep.INPUT_TYPE);
           Input stepInput = ComponentFactory.create(Input.class, stepInputConfig, false);
 
@@ -257,7 +257,7 @@ public class StepUtils {
             throw new RuntimeException("Invalid step input sub-class for: " + stepName);
           }
         }
-        else {
+        else { //默认是BatchStep
           LOG.debug("Adding batch step: " + stepName);
           step = new BatchStep(stepName);
         }

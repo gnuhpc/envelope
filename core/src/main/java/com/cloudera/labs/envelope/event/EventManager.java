@@ -48,7 +48,7 @@ public class EventManager {
   }
 
   public static void notify(Event event) {
-    if (!registered) {
+    if (!registered) {//尚未注册就先暂存在bufferedEvents中
       bufferedEvents.add(event);
       return;
     }

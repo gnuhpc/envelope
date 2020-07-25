@@ -28,10 +28,11 @@ import java.util.Set;
 @SuppressWarnings("serial")
 public class Validations extends HashSet<Validation> {
 
+  //默认不允许不认识的Path，只有UDF在代码中被设置为允许
   private boolean allowUnrecognizedPaths = false;
   private Set<String> ownValidatingPaths = Sets.newHashSet();
   private Set<String> allowEmptyValuePaths = Sets.newHashSet();
-  
+
   private Validations() {}
 
   /**
@@ -49,11 +50,11 @@ public class Validations extends HashSet<Validation> {
   public static ValidationsBuilder builder() {
     return new ValidationsBuilder();
   }
-  
+
   public boolean allowsUnrecognizedPaths() {
     return allowUnrecognizedPaths;
   }
-  
+
   public Set<String> getOwnValidatingPaths() {
     return ownValidatingPaths;
   }
@@ -145,7 +146,7 @@ public class Validations extends HashSet<Validation> {
 
   public static class ValidationsBuilder {
     private Validations v = new Validations();
-    
+
     private ValidationsBuilder() {}
 
     /**
@@ -314,7 +315,7 @@ public class Validations extends HashSet<Validation> {
       v.ownValidatingPaths.add(path);
       return this;
     }
-    
+
     public Validations build() {
       v.addAll(getNonEmptyValidations());
       return v;
@@ -337,5 +338,5 @@ public class Validations extends HashSet<Validation> {
       return nonEmptyValidations;
     }
   }
-  
+
 }

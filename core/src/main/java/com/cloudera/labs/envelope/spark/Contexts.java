@@ -38,6 +38,12 @@ import java.util.UUID;
  * Used as a singleton for any driver code in Envelope to retrieve the various Spark contexts, and have them
  * instantiated automatically if they have not already been created.
  */
+/*
+为什么这么写？
+https://howtodoinjava.com/design-patterns/creational/singleton-design-pattern-in-java/
+https://howtodoinjava.com/java/enum/is-enum-really-best-for-singletons/
+https://dzone.com/articles/java-singletons-using-enum
+ */
 public enum Contexts {
 
   INSTANCE;
